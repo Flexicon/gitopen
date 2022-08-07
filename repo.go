@@ -11,8 +11,8 @@ type RepoService struct {
 	cmd Commander
 }
 
-func (s RepoService) GetRepositoryURL() (string, error) {
-	origin, err := s.getOriginURL()
+func (s RepoService) GetRepositoryURL(remote string) (string, error) {
+	origin, err := s.getRemoteURL(remote)
 	if err != nil {
 		return "", err
 	}
@@ -31,8 +31,8 @@ func (s RepoService) GetRepositoryURL() (string, error) {
 	return fmt.Sprintf("https://%s/%s", matches[1], matches[2]), nil
 }
 
-func (s RepoService) getOriginURL() (string, error) {
-	out, err := s.cmd.CommandOutput("git", "remote", "get-url", "origin")
+func (s RepoService) getRemoteURL(remote string) (string, error) {
+	out, err := s.cmd.CommandOutput("git", "remote", "get-url", remote)
 	if err != nil {
 		return "", err
 	}

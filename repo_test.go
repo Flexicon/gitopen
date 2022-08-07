@@ -62,7 +62,7 @@ func TestRepoService_GetRepositoryURL(t *testing.T) {
 			s := &RepoService{
 				cmd: tt.fields.cmd,
 			}
-			got, err := s.GetRepositoryURL()
+			got, err := s.GetRepositoryURL("origin")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RepoService.GetRepositoryURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
