@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -10,13 +11,13 @@ type RepoService struct {
 	cmd Commander
 }
 
-func (s RepoService) getRepositoryURL() (string, error) {
+func (s RepoService) GetRepositoryURL() (string, error) {
 	origin, err := s.getOriginURL()
 	if err != nil {
 		return "", err
 	}
 
-	if !strings.HasPrefix(origin, "git@") {
+	if !strings.HasPrefix(origin, "git@") && s.validURL(origin) {
 		return strings.TrimSuffix(origin, ".git"), nil
 	}
 
@@ -37,4 +38,10 @@ func (s RepoService) getOriginURL() (string, error) {
 	}
 
 	return strings.TrimSpace(string(out)), nil
+}
+
+func (s RepoService) validURL(input string) bool {
+	_, err := url.ParseRequestURI(input)
+
+	return err == nil
 }

@@ -22,7 +22,7 @@ func main() {
 }
 
 func run(repo *RepoService, opener *UrlOpener) error {
-	repoURL, err := repo.getRepositoryURL()
+	repoURL, err := repo.GetRepositoryURL()
 	if err != nil {
 		return err
 	}
