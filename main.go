@@ -10,10 +10,7 @@ import (
 const (
 	AppName           = "gitopen"
 	DefaultRemoteName = "origin"
-)
-
-var (
-	Version = "dev"
+	Version           = "v0.0.3"
 )
 
 func main() {
