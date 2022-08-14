@@ -7,8 +7,7 @@ Quickly open any Git repository remote as a link in your browser.
 #### Homebrew
 
 ```
-brew tap flexicon/tap
-brew install gitopen
+brew tap flexicon/tap && brew install gitopen
 ```
 
 #### Go
