@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -14,11 +15,9 @@ const (
 )
 
 func main() {
-	cmd := OSCommander{}
-
-	if err := run(os.Args, cmd); err != nil {
+	if err := run(); err != nil {
 		if err, ok := err.(*exec.ExitError); ok {
-			fmt.Fprint(os.Stderr, fmt.Sprintf("%s", err.Stderr))
+			fmt.Fprint(os.Stderr, string(err.Stderr))
 			os.Exit(err.ExitCode())
 		}
 
@@ -27,65 +26,79 @@ func main() {
 	}
 }
 
-func run(args []string, cmd Commander) error {
-	arg, err := parseArg(args)
-	if err != nil {
+func run() error {
+	conf := loadConfig()
+	if err := handleCommands(conf); err != nil {
 		return err
 	}
 
-	// Handle argument as flags, otherwise treat it as remote name
-	switch arg {
-	case "--help", "-h", "help":
-		return runHelp()
-	case "--version", "-v", "version":
-		return runVersion()
-	default:
-		if strings.HasPrefix(arg, "-") {
-			return fmt.Errorf("unknown option: %s", arg)
-		}
-	}
+	cmdr := OSCommander{}
+	repo := &RepoService{cmdr}
+	opener := &UrlOpener{cmdr}
 
-	repo := &RepoService{cmd}
-	opener := &UrlOpener{cmd}
-	return runForRemote(arg, repo, opener)
+	return runOpenRemote(*conf, repo, opener)
 }
 
-func runForRemote(remote string, repo *RepoService, opener *UrlOpener) error {
-	repoURL, err := repo.GetRepositoryURL(remote)
+func runOpenRemote(conf Config, repo *RepoService, opener *UrlOpener) error {
+	if conf.DryRun {
+		fmt.Printf("dry-run\n\n")
+	}
+
+	repoURL, err := repo.GetRepositoryURL(conf.Remote)
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Opening %s\n", repoURL)
 
+	if conf.DryRun {
+		return nil
+	}
 	return opener.Open(repoURL)
 }
 
-func runHelp() error {
+func handleCommands(conf *Config) error {
+	if len(os.Args) < 2 {
+		return nil
+	}
+
+	arg := os.Args[1]
+	if strings.HasPrefix(arg, "-") {
+		return nil // commands can only be the first argument
+	}
+
+	switch arg {
+	case "help":
+		printHelp()
+	case "version":
+		printVersion()
+	default:
+		if conf.Remote != "" {
+			return fmt.Errorf("unknown command: %s", arg)
+		}
+	}
+	return nil
+}
+
+func printHelp() {
 	helpText := fmt.Sprintf(`
 %[1]s opens any Git repository remote as a link in your browser.
 
-Usage:
-  %[1]s [remote]
+Commands:
+  help		show this help message
+  version	show version
 
-Flags:
-  -v, --version		display the current app version
-  -h, --help		display this help message
-  	`, AppName)
+Flags:`, AppName) + "\n"
+
+	flag.VisitAll(func(f *flag.Flag) {
+		helpText += fmt.Sprintf("  -%s=%s\t%s\n", f.Name, f.DefValue, f.Usage)
+	})
 
 	fmt.Println(strings.TrimSpace(helpText))
-	return nil
+	os.Exit(0)
 }
 
-func runVersion() error {
+func printVersion() {
 	fmt.Printf("%s %s\n", AppName, Version)
-	return nil
-}
-
-func parseArg(args []string) (string, error) {
-	if len(args) <= 1 {
-		return DefaultRemoteName, nil
-	}
-
-	return strings.TrimSpace(args[1]), nil
+	os.Exit(0)
 }
