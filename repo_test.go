@@ -24,7 +24,7 @@ func TestRepoService_GetRepositoryURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "ssh remote",
+			name: "git remote",
 			fields: fields{
 				cmd: TestCommander{Output: "git@github.com:Flexicon/gitopen.git", Error: nil},
 			},
@@ -32,11 +32,27 @@ func TestRepoService_GetRepositoryURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "non-github remote",
+			name: "non-github git remote",
 			fields: fields{
 				cmd: TestCommander{Output: "git@gitlab.com:gitlab-org/ruby/gems/gitlab-styles.git", Error: nil},
 			},
 			want:    "https://gitlab.com/gitlab-org/ruby/gems/gitlab-styles",
+			wantErr: false,
+		},
+		{
+			name: "ssh remote",
+			fields: fields{
+				cmd: TestCommander{Output: "ssh://git@github.com/Flexicon/gitopen", Error: nil},
+			},
+			want:    "https://github.com/Flexicon/gitopen",
+			wantErr: false,
+		},
+		{
+			name: "ssh remote - longer",
+			fields: fields{
+				cmd: TestCommander{Output: "ssh://git@github.com/Homebrew/homebrew-core", Error: nil},
+			},
+			want:    "https://github.com/Homebrew/homebrew-core",
 			wantErr: false,
 		},
 		{

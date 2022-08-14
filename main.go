@@ -11,7 +11,7 @@ import (
 const (
 	AppName           = "gitopen"
 	DefaultRemoteName = "origin"
-	Version           = "v0.0.3"
+	Version           = "v0.0.4"
 )
 
 func main() {
